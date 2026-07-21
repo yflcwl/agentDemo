@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>经营分析 Agent 控制台</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #f5f0e7;
+            --bg-soft: rgba(255, 250, 242, 0.88);
+            --panel: rgba(255, 252, 247, 0.9);
+            --panel-strong: #fffdf8;
+            --ink: #1d1b18;
+            --ink-soft: #62584e;
+            --line: rgba(41, 33, 24, 0.12);
+            --accent: #9d3b21;
+            --accent-soft: rgba(157, 59, 33, 0.12);
+            --accent-strong: #7b2310;
+            --success: #245b45;
+            --shadow: 0 18px 48px rgba(63, 45, 26, 0.12);
+            --radius-lg: 24px;
+            --radius-md: 18px;
+            --radius-sm: 12px;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: "Noto Serif SC", serif;
+            color: var(--ink);
+            background:
+                radial-gradient(circle at top left, rgba(157, 59, 33, 0.12), transparent 32%),
+                radial-gradient(circle at right center, rgba(36, 91, 69, 0.11), transparent 26%),
+                linear-gradient(140deg, #f7f2ea 0%, #efe6da 100%);
+            min-height: 100vh;
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(43, 30, 18, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(43, 30, 18, 0.03) 1px, transparent 1px);
+            background-size: 28px 28px;
+            pointer-events: none;
+            opacity: 0.45;
+        }
+
+        .shell {
+            position: relative;
+            width: min(1380px, calc(100% - 40px));
+            margin: 24px auto 40px;
+        }
+
+        .hero {
+            background: linear-gradient(135deg, rgba(255, 252, 247, 0.9), rgba(250, 239, 227, 0.88));
+            border: 1px solid rgba(72, 48, 25, 0.08);
+            border-radius: 30px;
+            box-shadow: var(--shadow);
+            padding: 28px 32px;
+            backdrop-filter: blur(10px);
+        }
+
+        .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            color: var(--accent-strong);
+            background: rgba(157, 59, 33, 0.08);
+            border: 1px solid rgba(157, 59, 33, 0.16);
+            border-radius: 999px;
+            padding: 8px 12px;
+        }
+
+        h1 {
+            margin: 18px 0 12px;
+            font-size: clamp(34px, 5vw, 58px);
+            line-height: 1.04;
+            letter-spacing: -0.03em;
+        }
+
+        .hero p {
+            margin: 0;
+            max-width: 760px;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--ink-soft);
+        }
+
+        .layout {
+            display: grid;
+            grid-template-columns: 360px 1fr;
+            gap: 22px;
+            margin-top: 22px;
+        }
+
+        .panel {
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow);
+            padding: 22px;
+            backdrop-filter: blur(10px);
+        }
+
+        .panel h2 {
+            margin: 0 0 6px;
+            font-size: 20px;
+        }
+
+        .muted {
+            margin: 0 0 18px;
+            color: var(--ink-soft);
+            line-height: 1.7;
+            font-size: 14px;
+        }
+
+        .field {
+            display: grid;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        label {
+            font-size: 13px;
+            color: var(--ink-soft);
+        }
+
+        input,
+        textarea,
+        select,
+        pre {
+            font-family: "IBM Plex Mono", monospace;
+        }
+
+        input,
+        textarea {
+            width: 100%;
+            border: 1px solid rgba(51, 39, 28, 0.15);
+            border-radius: var(--radius-sm);
+            background: rgba(255, 255, 255, 0.76);
+            color: var(--ink);
+            padding: 14px 15px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color .2s ease, transform .2s ease, box-shadow .2s ease;
+        }
+
+        input:focus,
+        textarea:focus {
+            border-color: rgba(157, 59, 33, 0.45);
+            box-shadow: 0 0 0 4px rgba(157, 59, 33, 0.09);
+            transform: translateY(-1px);
+        }
+
+        textarea {
+            min-height: 168px;
+            resize: vertical;
+            line-height: 1.65;
+        }
+
+        .button-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 6px;
+        }
+
+        button {
+            border: 0;
+            border-radius: 999px;
+            padding: 12px 16px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 14px;
+            transition: transform .18s ease, box-shadow .18s ease, opacity .18s ease;
+        }
+
+        button:hover {
+            transform: translateY(-1px);
+        }
+
+        button:disabled {
+            opacity: 0.55;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .primary {
+            background: linear-gradient(135deg, #b84b2a, #7b2310);
+            color: #fffaf4;
+            box-shadow: 0 10px 20px rgba(123, 35, 16, 0.24);
+        }
+
+        .secondary {
+            background: rgba(157, 59, 33, 0.1);
+            color: var(--accent-strong);
+            border: 1px solid rgba(157, 59, 33, 0.14);
+        }
+
+        .ghost {
+            background: rgba(33, 29, 24, 0.05);
+            color: var(--ink);
+        }
+
+        .status-strip {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+
+        .status-card {
+            border-radius: var(--radius-md);
+            padding: 14px 16px;
+            border: 1px solid rgba(47, 34, 22, 0.08);
+            background: linear-gradient(160deg, rgba(255, 255, 255, 0.78), rgba(248, 242, 235, 0.94));
+        }
+
+        .status-card .label {
+            color: var(--ink-soft);
+            font-size: 12px;
+            margin-bottom: 6px;
+        }
+
+        .status-card .value {
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .chip {
+            background: rgba(36, 91, 69, 0.08);
+            color: var(--success);
+            border: 1px solid rgba(36, 91, 69, 0.16);
+            border-radius: 999px;
+            padding: 10px 14px;
+            font-size: 13px;
+            line-height: 1.4;
+            cursor: pointer;
+        }
+
+        .chip:hover {
+            background: rgba(36, 91, 69, 0.14);
+        }
+
+        .viewer {
+            min-height: 300px;
+            border-radius: var(--radius-md);
+            border: 1px solid rgba(38, 29, 20, 0.12);
+            background:
+                linear-gradient(180deg, rgba(255, 255, 255, 0.93), rgba(250, 247, 242, 0.94));
+            padding: 18px;
+            white-space: pre-wrap;
+            line-height: 1.72;
+            overflow: auto;
+        }
+
+        .viewer.mono {
+            font-family: "IBM Plex Mono", monospace;
+            font-size: 13px;
+        }
+
+        .viewer.empty {
+            color: #8c7e70;
+        }
+
+        .split {
+            display: grid;
+            grid-template-columns: 1.2fr 0.8fr;
+            gap: 18px;
+        }
+
+        .section-title {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .section-title h3 {
+            margin: 0;
+            font-size: 17px;
+        }
+
+        .hint {
+            color: var(--ink-soft);
+            font-size: 13px;
+        }
+
+        .activity {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 14px;
+            color: var(--ink-soft);
+            font-size: 13px;
+        }
+
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #a2a2a2;
+            box-shadow: 0 0 0 0 rgba(162, 162, 162, 0.4);
+        }
+
+        .dot.live {
+            background: var(--success);
+            animation: pulse 1.8s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(36, 91, 69, 0.32); }
+            70% { box-shadow: 0 0 0 10px rgba(36, 91, 69, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(36, 91, 69, 0); }
+        }
+
+        @media (max-width: 1100px) {
+            .layout,
+            .split,
+            .status-strip {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 720px) {
+            .shell {
+                width: min(100% - 20px, 1380px);
+                margin-top: 12px;
+            }
+
+            .hero,
+            .panel {
+                padding: 18px;
+                border-radius: 22px;
+            }
+
+            h1 {
+                font-size: 34px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="shell">
+    <section class="hero">
+        <span class="eyebrow">AgentScope Java / Analytics Demo</span>
+        <h1>经营分析 Agent 控制台</h1>
+        <p>
+            这个页面用于直接操作你当前的多智能体经营分析 Demo。你可以查看样例库 schema、发起一次性分析、
+            观察流式分析输出，并通过同一个 <code>sessionId</code> 体验多轮追问的会话记忆。
+        </p>
+    </section>
+
+    <div class="layout">
+        <aside class="panel">
+            <h2>控制面板</h2>
+            <p class="muted">左侧负责输入问题和调接口，右侧展示 schema、分析结果和流式过程。</p>
+
+            <div class="field">
+                <label for="sessionId">会话 ID</label>
+                <input id="sessionId" value="demo-001" />
+            </div>
+
+            <div class="field">
+                <label for="question">分析问题</label>
+                <textarea id="question">近30天销售额趋势如何？</textarea>
+            </div>
+
+            <div class="button-row">
+                <button class="primary" id="runOnceBtn">一次性分析</button>
+                <button class="secondary" id="runStreamBtn">流式分析</button>
+                <button class="ghost" id="loadSchemaBtn">查看 Schema</button>
+                <button class="ghost" id="clearBtn">清空输出</button>
+            </div>
+
+            <div class="activity">
+                <span class="dot" id="statusDot"></span>
+                <span id="statusText">空闲中，等待发起分析。</span>
+            </div>
+
+            <hr style="border:none;border-top:1px solid var(--line);margin:20px 0;">
+
+            <div class="section-title">
+                <h3>示例问题</h3>
+                <span class="hint">点击即可填入</span>
+            </div>
+            <div class="chips">
+                <button class="chip" data-question="近30天销售额趋势如何？">近30天销售额趋势如何？</button>
+                <button class="chip" data-question="本月Top 5商品销售额是多少？">本月 Top 5 商品销售额是多少？</button>
+                <button class="chip" data-question="华东地区订单数和客单价如何？">华东地区订单数和客单价如何？</button>
+                <button class="chip" data-question="哪个地区销售额最高？">哪个地区销售额最高？</button>
+                <button class="chip" data-question="把刚才结果总结成3条。">把刚才结果总结成 3 条。</button>
+            </div>
+        </aside>
+
+        <main class="panel">
+            <div class="status-strip">
+                <div class="status-card">
+                    <div class="label">当前模式</div>
+                    <div class="value" id="modeValue">待命</div>
+                </div>
+                <div class="status-card">
+                    <div class="label">当前 Session</div>
+                    <div class="value" id="sessionValue">demo-001</div>
+                </div>
+                <div class="status-card">
+                    <div class="label">接口入口</div>
+                    <div class="value">/api/analysis/*</div>
+                </div>
+            </div>
+
+            <div class="split">
+                <section>
+                    <div class="section-title">
+                        <h3>分析结果 / 流式输出</h3>
+                        <span class="hint">展示 once 或 stream 的返回内容</span>
+                    </div>
+                    <div class="viewer empty" id="resultViewer">这里会显示分析结果。建议先点“查看 Schema”，再发起问题。</div>
+                </section>
+
+                <section>
+                    <div class="section-title">
+                        <h3>Schema 与支持指标</h3>
+                        <span class="hint">来自 /analysis/schema</span>
+                    </div>
+                    <div class="viewer mono empty" id="schemaViewer">点击“查看 Schema”后，这里会显示样例库的表结构和支持指标。</div>
+                </section>
+            </div>
+        </main>
+    </div>
+</div>
+
+<script>
+    const sessionInput = document.getElementById('sessionId');
+    const questionInput = document.getElementById('question');
+    const resultViewer = document.getElementById('resultViewer');
+    const schemaViewer = document.getElementById('schemaViewer');
+    const runOnceBtn = document.getElementById('runOnceBtn');
+    const runStreamBtn = document.getElementById('runStreamBtn');
+    const loadSchemaBtn = document.getElementById('loadSchemaBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const statusDot = document.getElementById('statusDot');
+    const statusText = document.getElementById('statusText');
+    const modeValue = document.getElementById('modeValue');
+    const sessionValue = document.getElementById('sessionValue');
+
+    let activeController = null;
+
+    function updateSessionLabel() {
+        sessionValue.textContent = sessionInput.value.trim() || 'analysis-default';
+    }
+
+    function setBusy(mode, text) {
+        modeValue.textContent = mode;
+        statusText.textContent = text;
+        statusDot.classList.add('live');
+        runOnceBtn.disabled = true;
+        runStreamBtn.disabled = true;
+        loadSchemaBtn.disabled = true;
+    }
+
+    function setIdle(text = '空闲中，等待发起分析。') {
+        modeValue.textContent = '待命';
+        statusText.textContent = text;
+        statusDot.classList.remove('live');
+        runOnceBtn.disabled = false;
+        runStreamBtn.disabled = false;
+        loadSchemaBtn.disabled = false;
+    }
+
+    function setViewer(viewer, text, mono = false) {
+        viewer.textContent = text;
+        viewer.classList.remove('empty', 'mono');
+        if (!text) {
+            viewer.classList.add('empty');
+        }
+        if (mono) {
+            viewer.classList.add('mono');
+        }
+    }
+
+    async function fetchSchema() {
+        setBusy('Schema', '正在读取样例库 schema 和支持指标...');
+        try {
+            const response = await fetch('./analysis/schema');
+            if (!response.ok) {
+                throw new Error('Schema 请求失败：' + response.status);
+            }
+            const data = await response.json();
+            const pretty = [
+                '=== 样例库 Schema ===',
+                data.schemaInfo,
+                '',
+                '=== 支持指标 ===',
+                data.supportedMetrics
+            ].join('\n');
+            setViewer(schemaViewer, pretty, true);
+            setIdle('Schema 已加载，可以开始提问。');
+        } catch (error) {
+            setViewer(schemaViewer, '加载失败：' + error.message, true);
+            setIdle('Schema 加载失败。');
+        }
+    }
+
+    async function runOnce() {
+        updateSessionLabel();
+        const message = questionInput.value.trim();
+        if (!message) {
+            setViewer(resultViewer, '请输入分析问题。');
+            return;
+        }
+
+        setBusy('Once', '正在执行一次性分析，请等待主控 Agent 汇总结果...');
+        setViewer(resultViewer, '正在请求 /analysis/once ...');
+
+        try {
+            const url = `./analysis/once?message=${encodeURIComponent(message)}&sessionId=${encodeURIComponent(sessionInput.value.trim())}`;
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error('分析请求失败：' + response.status);
+            }
+            const text = await response.text();
+            setViewer(resultViewer, text);
+            setIdle('一次性分析完成。');
+        } catch (error) {
+            setViewer(resultViewer, '执行失败：' + error.message);
+            setIdle('一次性分析失败。');
+        }
+    }
+
+    async function runStream() {
+        updateSessionLabel();
+        const message = questionInput.value.trim();
+        if (!message) {
+            setViewer(resultViewer, '请输入分析问题。');
+            return;
+        }
+
+        if (activeController) {
+            activeController.abort();
+        }
+        activeController = new AbortController();
+
+        setBusy('Stream', '正在流式分析，请观察输出变化...');
+        setViewer(resultViewer, '');
+        resultViewer.classList.remove('empty');
+
+        try {
+            const url = `./analysis/stream?message=${encodeURIComponent(message)}&sessionId=${encodeURIComponent(sessionInput.value.trim())}`;
+            const response = await fetch(url, { signal: activeController.signal });
+            if (!response.ok || !response.body) {
+                throw new Error('流式分析请求失败：' + response.status);
+            }
+
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder('utf-8');
+
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) {
+                    break;
+                }
+                resultViewer.textContent += decoder.decode(value, { stream: true });
+                resultViewer.scrollTop = resultViewer.scrollHeight;
+            }
+
+            setIdle('流式分析完成。');
+        } catch (error) {
+            if (error.name === 'AbortError') {
+                setViewer(resultViewer, resultViewer.textContent + '\n\n[流式请求已取消]');
+                setIdle('流式分析已取消。');
+            } else {
+                setViewer(resultViewer, '流式分析失败：' + error.message);
+                setIdle('流式分析失败。');
+            }
+        } finally {
+            activeController = null;
+        }
+    }
+
+    sessionInput.addEventListener('input', updateSessionLabel);
+    runOnceBtn.addEventListener('click', runOnce);
+    runStreamBtn.addEventListener('click', runStream);
+    loadSchemaBtn.addEventListener('click', fetchSchema);
+    clearBtn.addEventListener('click', () => {
+        if (activeController) {
+            activeController.abort();
+        }
+        setViewer(resultViewer, '这里会显示分析结果。建议先点“查看 Schema”，再发起问题。');
+        resultViewer.classList.add('empty');
+        setIdle();
+    });
+
+    document.querySelectorAll('.chip').forEach((chip) => {
+        chip.addEventListener('click', () => {
+            questionInput.value = chip.dataset.question;
+            questionInput.focus();
+        });
+    });
+
+    updateSessionLabel();
+    fetchSchema();
+</script>
+</body>
+</html>

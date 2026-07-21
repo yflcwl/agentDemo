@@ -36,12 +36,14 @@ public class AnalysisController {
 
         return analyticsAgent.streamEvents(new UserMessage(message), ctx)
                 .flatMap(event -> {
+                    // 父 Agent 触发工具调用时，前端先给一个“子 Agent 开始协作”的阶段提示。
                     if (event instanceof ToolCallStartEvent) {
                         return Flux.just("\n[子Agent开始协作]\n");
                     }
                     if (event instanceof TextBlockDeltaEvent deltaEvent) {
                         String delta = deltaEvent.getDelta();
                         streamedText.append(delta);
+                        // 一旦文本里出现 SQL 段标题，就补一个显式标记，方便前端观察阶段切换。
                         if (!sqlMarkerEmitted.get() && containsSqlSection(streamedText)) {
                             sqlMarkerEmitted.set(true);
                             return Flux.just("\n[SQL已生成]\n", delta);
@@ -52,6 +54,9 @@ public class AnalysisController {
                 });
     }
 
+    /**
+     * 一次性返回完整分析结果，适合后端调试或直接用浏览器访问。
+     */
     @GetMapping("/once")
     public String once(String message, String sessionId) {
         return analyticsAgent.call(new UserMessage(message), runtimeContext(sessionId))
@@ -59,6 +64,9 @@ public class AnalysisController {
                 .getTextContent();
     }
 
+    /**
+     * 暴露样例库 schema 和支持指标，便于前端初始化和人工调试。
+     */
     @GetMapping("/schema")
     public Map<String, String> schema() {
         Map<String, String> response = new LinkedHashMap<>();
@@ -70,6 +78,7 @@ public class AnalysisController {
     private RuntimeContext runtimeContext(String sessionId) {
         return RuntimeContext.builder()
                 .userId("analysis-demo")
+                // sessionId 相同表示同一段分析会话，可用于多轮追问；为空时落到默认会话。
                 .sessionId(sessionId == null || sessionId.isBlank() ? "analysis-default" : sessionId)
                 .build();
     }

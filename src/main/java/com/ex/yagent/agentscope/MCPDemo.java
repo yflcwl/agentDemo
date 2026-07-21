@@ -41,7 +41,7 @@ public class MCPDemo {
 
         // 注册工具
         Toolkit toolkit = new Toolkit();
-        toolkit.registerMcpClient(client).block();
+//        toolkit.registerMcpClient(client).block();
 
 
         ReActAgent agent = ReActAgent.builder()
@@ -58,7 +58,7 @@ public class MCPDemo {
                 .sessionId("financial-analysis")
                 .build();
 
-        agent.streamEvents(new UserMessage(msg), ctx)
+        /*agent.streamEvents(new UserMessage(msg), ctx)
                 .doOnNext(event -> {
                     System.out.println("[event] " + event.getType());
 
@@ -68,7 +68,7 @@ public class MCPDemo {
                         System.out.println("\n[tool] " + ((ToolCallStartEvent) event).getToolCallId());
                     }
                 })
-                .blockLast();
+                .blockLast();*/
 
 
     }

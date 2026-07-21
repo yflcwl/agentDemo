@@ -16,6 +16,10 @@ import java.nio.file.Path;
 @Configuration
 public class AnalyticsAgentConfig {
 
+    /**
+     * 主控 Agent 的系统提示词。
+     * 这里把多智能体协作顺序、输出结构和约束一次性写死，保证第一版 Demo 稳定可观察。
+     */
     private static final String ANALYTICS_SYSTEM_PROMPT = """
             你是经营分析协调 Agent，负责将用户问题编排成一次完整的数据分析协作。
 
@@ -48,6 +52,7 @@ public class AnalyticsAgentConfig {
             @Value("${spring.ai.dashscope.api-key}") String apiKey
     ) {
         Toolkit toolkit = new Toolkit();
+        // 这些工具由主控 Agent 和子 Agent 共用，负责 schema 查询、指标说明和只读 SQL 执行。
         toolkit.registerTool(analyticsTools);
 
         return HarnessAgent.builder()
@@ -55,8 +60,11 @@ public class AnalyticsAgentConfig {
                 .sysPrompt(ANALYTICS_SYSTEM_PROMPT)
                 .model(buildModel(apiKey))
                 .toolkit(toolkit)
+                // 子 Agent 声明文件放在 workspace/subagents 下，HarnessAgent 启动时会自动加载。
                 .workspace(Path.of(".agentscope", "analytics-workspace"))
+                // 每个 session 的分析上下文单独落盘，方便多轮追问时恢复状态。
                 .stateStore(new JsonFileAgentStateStore(Path.of(".agentscope", "analytics-state")))
+                // 控制长会话的上下文膨胀，避免多轮追问后 prompt 无限增长。
                 .compaction(CompactionConfig.builder()
                         .triggerMessages(24)
                         .keepMessages(8)

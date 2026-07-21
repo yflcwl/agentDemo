@@ -34,6 +34,9 @@ public class AnalyticsTools {
         this.jdbcTemplate = jdbcTemplate;
     }
 
+    /**
+     * 给 SQL 分析子 Agent 提供固定 schema 说明，避免它凭空猜表结构和指标口径。
+     */
     @Tool(name = "getSchemaInfo", description = "返回经营分析样例库的表结构、字段业务含义和 H2 SQL 使用约定")
     public String getSchemaInfo() {
         return """
@@ -81,6 +84,9 @@ public class AnalyticsTools {
                 """;
     }
 
+    /**
+     * 返回当前 Demo 明确支持的指标和维度范围，帮助 metric/sql 子 Agent 收敛分析边界。
+     */
     @Tool(name = "listSupportedMetrics", description = "返回当前经营分析 Demo 支持的指标、维度和典型问题类型")
     public String listSupportedMetrics() {
         List<Map<String, Object>> metrics = List.of(
@@ -91,6 +97,10 @@ public class AnalyticsTools {
         return toJson(metrics);
     }
 
+    /**
+     * 执行真正的数据查询。
+     * 这里强制只允许只读 SQL，避免 Agent 误生成写操作语句修改样例库。
+     */
     @Tool(name = "runReadOnlySql", description = "在 H2 经营分析样例库中执行只读 SQL，并返回 JSON 格式的结果")
     public String runReadOnlySql(
             @ToolParam(name = "sql", description = "只读 H2 SQL，必须以 SELECT 或 WITH 开头") String sql
@@ -120,6 +130,9 @@ public class AnalyticsTools {
         return payload;
     }
 
+    /**
+     * 统一清洗 SQL 文本，去掉尾部分号，减少模型输出格式对执行层的影响。
+     */
     private String normalizeSql(String sql) {
         if (sql == null || sql.isBlank()) {
             throw new IllegalArgumentException("SQL 不能为空");
@@ -131,6 +144,12 @@ public class AnalyticsTools {
         return normalized;
     }
 
+    /**
+     * 只做最小必要的安全限制：
+     * 1. 必须是查询语句
+     * 2. 拒绝常见写操作关键字
+     * 3. 不允许一次执行多条 SQL
+     */
     private void validateReadOnlySql(String sql) {
         if (!READONLY_PREFIX_PATTERN.matcher(sql).find()) {
             throw new IllegalArgumentException("只允许执行 SELECT 或 WITH 开头的只读 SQL");
