@@ -143,17 +143,6 @@ record ToolDefinition(String name, String description, Map<String, Object> input
  * @param compactRequested 是否请求主 loop 立刻做一次上下文压缩。
  *                         普通工具通常是 false，{@code compact} 这类控制型工具会是 true。
  */
-record ToolExecutionResult(String content, boolean compactRequested) {
-
-    static ToolExecutionResult of(String content) {
-        return new ToolExecutionResult(content, false);
-    }
-
-    static ToolExecutionResult compacted(String content) {
-        return new ToolExecutionResult(content, true);
-    }
-}
-
 /**
  * LlmTurn 表示“模型完成了一轮推理后的产物”。
  *

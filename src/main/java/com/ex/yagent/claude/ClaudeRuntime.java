@@ -1,5 +1,8 @@
 package com.ex.yagent.claude;
 
+import com.ex.yagent.claude.tools.support.ClaudeToolHandler;
+import com.ex.yagent.claude.tools.support.ToolExecutionContext;
+import com.ex.yagent.claude.tools.support.ToolExecutionResult;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.core.io.Resource;

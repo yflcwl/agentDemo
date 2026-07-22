@@ -1,5 +1,6 @@
 package com.ex.yagent.claude;
 
+import com.ex.yagent.claude.tools.support.ToolExecutionContext;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -26,7 +27,7 @@ class PermissionServiceTest {
 
         var denied = permissionService.check(
                 new ToolUseBlock("1", "bash", Map.of("command", "git reset --hard")),
-                new ToolExecutionContext(null, null, null, tempDir)
+                new ToolExecutionContext(null, tempDir, "", null)
         );
 
         assertTrue(denied.isPresent());
@@ -46,7 +47,7 @@ class PermissionServiceTest {
 
         var denied = permissionService.check(
                 new ToolUseBlock("2", "write_file", Map.of("path", "../secret.txt", "content", "x")),
-                new ToolExecutionContext(null, null, null, tempDir)
+                new ToolExecutionContext(null, tempDir, "", null)
         );
 
         assertTrue(denied.isPresent());

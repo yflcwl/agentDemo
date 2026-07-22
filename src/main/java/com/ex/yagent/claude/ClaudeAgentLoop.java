@@ -1,5 +1,9 @@
 package com.ex.yagent.claude;
 
+import com.ex.yagent.claude.tools.support.ClaudeToolHandler;
+import com.ex.yagent.claude.tools.support.ToolExecutionContext;
+import com.ex.yagent.claude.tools.support.ToolExecutionResult;
+
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -113,7 +117,7 @@ final class ClaudeAgentLoop {
             injectTodoReminder(session);
             CompactionService.prepare(runtime, session);
 
-            AssembledTools assembledTools = toolRegistry.assemble(session, this);
+            AssembledTools assembledTools = toolRegistry.assemble(session);
             LlmTurn turn = callWithRetry(session, assembledTools.definitions(), maxTokens);
             session.addMessage(turn.asAssistantMessage());
 
@@ -131,13 +135,13 @@ final class ClaudeAgentLoop {
             }
 
             if (!turn.hasToolUse()) {
-                runtime.hooks().runStop(session.messages(), new ToolExecutionContext(runtime, session, this, session.workingDirectory()));
+                runtime.hooks().runStop(session.messages(), toolRegistry.createContext(session, this));
                 return session.lastAssistantText();
             }
 
             boolean compactRequested = false;
             for (ToolUseBlock toolUse : session.lastAssistantToolUses()) {
-                ToolExecutionContext context = new ToolExecutionContext(runtime, session, this, session.workingDirectory());
+                ToolExecutionContext context = toolRegistry.createContext(session, this);
                 var blocked = runtime.hooks().runPreToolUse(toolUse, context);
                 if (blocked.isPresent()) {
                     session.addMessage(ClaudeMessage.toolResult(toolUse.id(), blocked.orElse("Permission denied")));
