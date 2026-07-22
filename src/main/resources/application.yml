@@ -39,3 +39,9 @@ knife4j:
 logging:
   level:
     org.springframework.ai: debug
+
+feishu:
+  base-url: https://open.feishu.cn/open-apis
+  app-id:
+  app-secret:
+  default-document-id:
