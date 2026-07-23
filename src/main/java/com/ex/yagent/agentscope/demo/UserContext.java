@@ -1,4 +1,4 @@
-package com.ex.yagent.agentscope;
+package com.ex.yagent.agentscope.demo;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

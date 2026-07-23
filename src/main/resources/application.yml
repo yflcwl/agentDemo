@@ -19,7 +19,7 @@ server:
   servlet:
     context-path: /api
 
-# springdoc-openapi????
+# springdoc-openapi
 springdoc:
   swagger-ui:
     path: /swagger-ui.html
@@ -31,11 +31,17 @@ springdoc:
     - group: 'default'
       paths-to-match: '/**'
       packages-to-scan: com.ex.yagent.controller
-# knife4j
-knife4j:
-  enable: true
-  setting:
-    language: zh_cn
 logging:
   level:
     org.springframework.ai: debug
+
+feishu:
+  base-url: https://open.feishu.cn/open-apis
+  app-id:
+  app-secret:
+  default-document-id:
+
+yagent:
+  demo:
+    spring-ai-runner:
+      enabled: false

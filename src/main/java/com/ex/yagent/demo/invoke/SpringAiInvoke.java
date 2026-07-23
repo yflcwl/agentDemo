@@ -12,7 +12,10 @@ import org.springframework.stereotype.Component;
  * Springai框架调用ai大模型
  */
 @Component
-@ConditionalOnProperty(name = "spring.ai.dashscope.enabled", havingValue = "true")
+@ConditionalOnProperty(
+        name = {"spring.ai.dashscope.enabled", "yagent.demo.spring-ai-runner.enabled"},
+        havingValue = "true"
+)
 public class SpringAiInvoke implements CommandLineRunner {
     @Resource
     private ChatModel dashscopeChatModel;

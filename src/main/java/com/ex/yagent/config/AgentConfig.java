@@ -1,6 +1,7 @@
 package com.ex.yagent.config;
 
-import com.ex.yagent.agentscope.WeatherTools;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ex.yagent.agentscope.demo.WeatherTools;
 import io.agentscope.core.ReActAgent;
 import io.agentscope.core.permission.PermissionContextState;
 import io.agentscope.core.permission.PermissionMode;
@@ -18,6 +19,11 @@ import java.util.List;
 
 @Configuration
 public class AgentConfig {
+
+    @Bean
+    public ObjectMapper objectMapper() {
+        return new ObjectMapper().findAndRegisterModules();
+    }
 
     @Bean
     public ReActAgent reActAgent(@Value("${spring.ai.dashscope.api-key}") String apiKey) {

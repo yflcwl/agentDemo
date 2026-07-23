@@ -1,4 +1,4 @@
-package com.ex.yagent.agentscope;
+package com.ex.yagent.agentscope.demo;
 
 import io.agentscope.core.tool.Tool;
 import io.agentscope.core.tool.ToolParam;

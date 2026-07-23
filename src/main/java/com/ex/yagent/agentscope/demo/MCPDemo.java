@@ -1,13 +1,8 @@
-package com.ex.yagent.agentscope;
+package com.ex.yagent.agentscope.demo;
 
 
 import io.agentscope.core.ReActAgent;
 import io.agentscope.core.agent.RuntimeContext;
-import io.agentscope.core.event.AgentEventType;
-import io.agentscope.core.event.TextBlockDeltaEvent;
-import io.agentscope.core.event.ToolCallStartEvent;
-import io.agentscope.core.message.Msg;
-import io.agentscope.core.message.UserMessage;
 import io.agentscope.core.state.JsonFileAgentStateStore;
 import io.agentscope.core.tool.Toolkit;
 import io.agentscope.core.tool.mcp.McpClientBuilder;

@@ -1,11 +1,9 @@
-package com.ex.yagent.agentscope;
+package com.ex.yagent.agentscope.demo;
 
 import io.agentscope.core.message.*;
-import io.agentscope.core.skill.repository.FileSystemSkillRepository;
 import io.agentscope.core.tracing.OtelTracingMiddleware;
 import io.agentscope.harness.agent.HarnessAgent;
 
-import java.nio.file.Paths;
 import java.util.List;
 
 public class SkillDemo {

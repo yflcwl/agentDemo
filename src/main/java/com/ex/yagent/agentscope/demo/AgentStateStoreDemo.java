@@ -1,4 +1,4 @@
-package com.ex.yagent.agentscope;
+package com.ex.yagent.agentscope.demo;
 
 import io.agentscope.core.message.UserMessage;
 import io.agentscope.extensions.redis.RedisDistributedStore;
