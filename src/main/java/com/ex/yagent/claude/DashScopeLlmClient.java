@@ -109,17 +109,20 @@ final class DashScopeLlmClient implements LlmClient {
             node.putNull("content");
         }
         if (message.role() == MessageRole.ASSISTANT) {
-            ArrayNode toolCalls = node.putArray("tool_calls");
-            for (ToolUseBlock toolUse : message.toolUses()) {
-                ObjectNode toolCall = toolCalls.addObject();
-                toolCall.put("id", toolUse.id());
-                toolCall.put("type", "function");
-                ObjectNode function = toolCall.putObject("function");
-                function.put("name", toolUse.name());
-                try {
-                    function.put("arguments", objectMapper.writeValueAsString(toolUse.input()));
-                } catch (JsonProcessingException e) {
-                    throw new IllegalStateException("序列化 tool call 参数失败", e);
+            List<ToolUseBlock> toolUses = message.toolUses();
+            if (!toolUses.isEmpty()) {
+                ArrayNode toolCalls = node.putArray("tool_calls");
+                for (ToolUseBlock toolUse : toolUses) {
+                    ObjectNode toolCall = toolCalls.addObject();
+                    toolCall.put("id", toolUse.id());
+                    toolCall.put("type", "function");
+                    ObjectNode function = toolCall.putObject("function");
+                    function.put("name", toolUse.name());
+                    try {
+                        function.put("arguments", objectMapper.writeValueAsString(toolUse.input()));
+                    } catch (JsonProcessingException e) {
+                        throw new IllegalStateException("序列化 tool call 参数失败", e);
+                    }
                 }
             }
         }

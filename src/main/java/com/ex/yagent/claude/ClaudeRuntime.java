@@ -10,7 +10,6 @@ import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -619,27 +618,18 @@ final class ShellSupport {
      * @return 进程是否成功退出，以及合并后的 stdout/stderr 文本。
      */
     static ShellResult runCommand(ProcessBuilderArgs args) {
+        return runCommand(args, 120);
+    }
+
+    static ShellResult runCommand(ProcessBuilderArgs args, long timeoutSeconds) {
         ProcessBuilder builder = new ProcessBuilder(args.command());
         builder.directory(args.workingDir().toFile());
         builder.redirectErrorStream(true);
-        try {
-            Process process = builder.start();
-            String output;
-            try (InputStream inputStream = process.getInputStream()) {
-                output = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
-            }
-            boolean finished = process.waitFor(120, TimeUnit.SECONDS);
-            if (!finished) {
-                process.destroyForcibly();
-                return new ShellResult(false, "Error: Timeout (120s)");
-            }
-            return new ShellResult(process.exitValue() == 0, output.trim());
-        } catch (IOException e) {
-            return new ShellResult(false, "Error: " + e.getMessage());
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            return new ShellResult(false, "Error: Interrupted");
+        CommandSupport.CommandResult result = CommandSupport.run(builder, timeoutSeconds);
+        if (result.timedOut()) {
+            return new ShellResult(false, "Error: Timeout (" + timeoutSeconds + "s)");
         }
+        return new ShellResult(result.success(), result.output());
     }
 }
 
@@ -1414,6 +1404,7 @@ final class PromptAssembler {
         sections.add("You are a coding agent. Act directly and use tools when needed.");
         sections.add("Workspace: " + runtime.workspaceRoot());
         sections.add("Current time: " + LocalDateTime.now());
+        sections.add("If the user asks for weather, news, or other real-time internet data and there is no dedicated tool, say you cannot reliably query it. Do not use bash as a substitute for web search.");
         sections.add("Skills catalog:\n" + runtime.skillRegistry().catalog() + "\nUse load_skill(name) when needed.");
         Path memoryFile = runtime.paths().memoryDir().resolve("MEMORY.md");
         if (Files.exists(memoryFile)) {

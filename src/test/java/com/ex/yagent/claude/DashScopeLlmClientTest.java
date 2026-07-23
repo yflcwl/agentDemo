@@ -1,5 +1,6 @@
 package com.ex.yagent.claude;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 
@@ -34,6 +35,31 @@ class DashScopeLlmClientTest {
         assertTrue(body.contains("\"model\":\"qwen-test\""));
         assertTrue(body.contains("\"tool_calls\""));
         assertTrue(body.contains("\"tool_call_id\":\"tool-1\""));
+    }
+
+    /**
+     * 这个测试验证：普通 assistant 文本消息不会被错误序列化为空 tool_calls 数组。
+     */
+    @Test
+    void shouldNotEmitEmptyToolCallsForPlainAssistantMessage() throws Exception {
+        ClaudeConfig config = new ClaudeConfig("test-key", "qwen-test", "fallback", "https://example.com", false);
+        ObjectMapper mapper = new ObjectMapper().findAndRegisterModules();
+        DashScopeLlmClient client = new DashScopeLlmClient(config, HttpClient.newHttpClient(), mapper);
+
+        String body = client.buildRequestBody(
+                "system",
+                List.of(
+                        ClaudeMessage.userText("hello"),
+                        ClaudeMessage.assistant(List.of(new TextBlock("纯文本回复")))
+                ),
+                List.of(new ToolDefinition("bash", "Run shell", Map.of("type", "object"))),
+                4096
+        );
+
+        JsonNode root = mapper.readTree(body);
+        JsonNode assistantMessage = root.path("messages").get(2);
+        assertEquals("assistant", assistantMessage.path("role").asText());
+        assertTrue(assistantMessage.path("tool_calls").isMissingNode());
     }
 
     /**
