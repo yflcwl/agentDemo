@@ -1,15 +1,13 @@
 package com.ex.yagent.claude.tools.execution;
 
+import com.ex.yagent.claude.CommandSupport;
 import com.ex.yagent.claude.tools.support.AbstractClaudeTools;
 import com.ex.yagent.claude.tools.support.ClaudeTool;
 import com.ex.yagent.claude.tools.support.ToolExecutionContext;
 import com.ex.yagent.claude.tools.support.ToolExecutionResult;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 public final class ExecutionTools extends AbstractClaudeTools {
 
@@ -19,21 +17,11 @@ public final class ExecutionTools extends AbstractClaudeTools {
         ProcessBuilder builder = new ProcessBuilder("powershell", "-NoProfile", "-Command", command);
         builder.directory(context.workingDirectory().toFile());
         builder.redirectErrorStream(true);
-        try {
-            Process process = builder.start();
-            String output = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
-            boolean finished = process.waitFor(120, TimeUnit.SECONDS);
-            if (!finished) {
-                process.destroyForcibly();
-                return ToolExecutionResult.of("错误：执行超时（120 秒）");
-            }
-            return ToolExecutionResult.of(output.isBlank() ? "(no output)" : output.trim());
-        } catch (IOException e) {
-            return ToolExecutionResult.of("错误：" + e.getMessage());
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            return ToolExecutionResult.of("错误：执行被中断");
+        CommandSupport.CommandResult result = CommandSupport.run(builder, 120);
+        if (result.timedOut()) {
+            return ToolExecutionResult.of("错误：执行超时（120 秒）");
         }
+        return ToolExecutionResult.of(result.output().isBlank() ? "(no output)" : result.output());
     }
 
     @ClaudeTool(name = "compact", description = "压缩较早对话并在精简后的上下文中继续。", schemaMethod = "emptySchema")
